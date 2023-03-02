@@ -1,0 +1,56 @@
+# Versão do docker compose
+version: "3.9"
+
+# Serviços
+services:
+  # Serviço do banco de dados
+  db:
+    # Nome do container
+    container_name: db
+    # Imagem do banco de dados
+    image: postgres:alpine3.17
+    # Volumes
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    # Variáveis de ambiente
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    # Portas
+    ports:
+      - "5432:5432"
+    # Reinicia o container sempre que ele for parado 
+    restart: always
+    networks:
+      - app-network
+    # Healthcheck
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    container_name: backend
+    build: ./backend
+    ports:
+      - "3333:3333"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - app-network
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    ports:
+      - "3000:80"
+    restart: always
+
+networks:
+  app-network:
+    driver: bridge

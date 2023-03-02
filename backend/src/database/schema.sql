@@ -1,0 +1,8 @@
+CREATE DATABASE students;
+
+CREATE EXTENSION IF NOT EXISTS "uuid-oosp"
+
+CREATE TABLE IF NOT EXISTS name (
+    id UUID NOT NULL UNIQUE DEFAULT uuid_generate_v4()
+    name VARCHAR(255) NOT NULL,
+)
